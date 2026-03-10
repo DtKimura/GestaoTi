@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
+const Equipamento = require('./Equipamento');
 
 const Celular = sequelize.define('Celular', {
   id: {
@@ -8,11 +9,11 @@ const Celular = sequelize.define('Celular', {
     primaryKey: true,
     autoIncrement: true,
   },
-  usuario_respId: {
+  equipamentoId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: User,
+      model: Equipamento,
       key: 'id',
     },
     onDelete: 'CASCADE',
@@ -35,14 +36,6 @@ const Celular = sequelize.define('Celular', {
     type: DataTypes.ENUM('ATIVO', 'INATIVO', 'DESCONTINUADO', 'REPARANDO'),
     allowNull: false,
     defaultValue: 'ATIVO',
-  },
-  marca: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  modelo: {
-    type: DataTypes.STRING,
-    allowNull: false,
   },
   processador: {
     type: DataTypes.STRING,
@@ -120,23 +113,19 @@ const Celular = sequelize.define('Celular', {
     type: DataTypes.DATE,
     allowNull: true,
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
 }, {
   tableName: 'celulares',
   timestamps: false,
 });
 
 // Define relationships
-Celular.belongsTo(User, {
-  foreignKey: 'usuario_respId',
-  as: 'usuario_resp',
+Celular.belongsTo(Equipamento, {
+  foreignKey: 'equipamentoId',
+  as: 'equipamento',
+});
+
+Equipamento.hasMany(Celular, {
+  foreignKey: 'equipamentoId',
 });
 
 Celular.belongsTo(User, {

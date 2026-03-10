@@ -1,8 +1,6 @@
 const UsoMoviDisp = require('../models/UsoMoviDisp');
 const User = require('../models/User');
-const Celular = require('../models/Celular');
-const Computador = require('../models/Computador');
-const AirTag = require('../models/AirTag');
+const Equipamento = require('../models/Equipamento');
 
 // Get all UsoMoviDisp records
 const getAllUsoMoviDisp = async (req, res) => {
@@ -15,9 +13,9 @@ const getAllUsoMoviDisp = async (req, res) => {
           attributes: ['id', 'name', 'email'],
         },
         {
-          model: User,
-          as: 'origem',
-          attributes: ['id', 'name', 'email'],
+          model: Equipamento,
+          as: 'equipamento',
+          attributes: ['id', 'tipo', 'marca', 'modelo'],
         },
       ],
     });
@@ -44,9 +42,9 @@ const getUsoMoviDispById = async (req, res) => {
           attributes: ['id', 'name', 'email'],
         },
         {
-          model: User,
-          as: 'origem',
-          attributes: ['id', 'name', 'email'],
+          model: Equipamento,
+          as: 'equipamento',
+          attributes: ['id', 'tipo', 'marca', 'modelo'],
         },
       ],
     });
@@ -57,24 +55,9 @@ const getUsoMoviDispById = async (req, res) => {
       });
     }
 
-    // Get the equipamento based on type
-    let equipamento = null;
-    if (record.equipamentoType === 'Celular') {
-      equipamento = await Celular.findByPk(record.equipamentoId);
-    } else if (record.equipamentoType === 'Computador') {
-      equipamento = await Computador.findByPk(record.equipamentoId);
-    } else if (record.equipamentoType === 'AirTag') {
-      equipamento = await AirTag.findByPk(record.equipamentoId);
-    }
-
-    const responseData = {
-      ...record.toJSON(),
-      equipamento,
-    };
-
     res.status(200).json({
       success: true,
-      data: responseData,
+      data: record,
     });
   } catch (error) {
     res.status(500).json({
@@ -87,21 +70,13 @@ const getUsoMoviDispById = async (req, res) => {
 // Create new UsoMoviDisp record
 const createUsoMoviDisp = async (req, res) => {
   try {
-    const { responsavelId, equipamentoId, equipamentoType, origemId } = req.body;
+    const { responsavelId, equipamentoId, finish_date } = req.body;
 
     // Validate required fields
-    if (!responsavelId || !equipamentoId || !equipamentoType || !origemId) {
+    if (!responsavelId || !equipamentoId) {
       return res.status(400).json({
         success: false,
-        message: 'responsavelId, equipamentoId, equipamentoType, and origemId are required',
-      });
-    }
-
-    // Validate equipamentoType
-    if (!['Celular', 'Computador', 'AirTag'].includes(equipamentoType)) {
-      return res.status(400).json({
-        success: false,
-        message: 'equipamentoType must be one of: Celular, Computador, AirTag',
+        message: 'responsavelId and equipamentoId are required',
       });
     }
 
@@ -114,29 +89,12 @@ const createUsoMoviDisp = async (req, res) => {
       });
     }
 
-    // Verify if origem (User) exists
-    const origem = await User.findByPk(origemId);
-    if (!origem) {
-      return res.status(404).json({
-        success: false,
-        message: 'User (origem) not found',
-      });
-    }
-
     // Verify if equipamento exists
-    let equipamento = null;
-    if (equipamentoType === 'Celular') {
-      equipamento = await Celular.findByPk(equipamentoId);
-    } else if (equipamentoType === 'Computador') {
-      equipamento = await Computador.findByPk(equipamentoId);
-    } else if (equipamentoType === 'AirTag') {
-      equipamento = await AirTag.findByPk(equipamentoId);
-    }
-
+    const equipamento = await Equipamento.findByPk(equipamentoId);
     if (!equipamento) {
       return res.status(404).json({
         success: false,
-        message: `${equipamentoType} with id ${equipamentoId} not found`,
+        message: 'Equipamento not found',
       });
     }
 
@@ -144,8 +102,7 @@ const createUsoMoviDisp = async (req, res) => {
     const record = await UsoMoviDisp.create({
       responsavelId,
       equipamentoId,
-      equipamentoType,
-      origemId,
+      finish_date,
     });
 
     // Fetch with associations
@@ -157,22 +114,17 @@ const createUsoMoviDisp = async (req, res) => {
           attributes: ['id', 'name', 'email'],
         },
         {
-          model: User,
-          as: 'origem',
-          attributes: ['id', 'name', 'email'],
+          model: Equipamento,
+          as: 'equipamento',
+          attributes: ['id', 'tipo', 'marca', 'modelo'],
         },
       ],
     });
 
-    const responseData = {
-      ...created_record.toJSON(),
-      equipamento,
-    };
-
     res.status(201).json({
       success: true,
       message: 'UsoMoviDisp record created successfully',
-      data: responseData,
+      data: created_record,
     });
   } catch (error) {
     res.status(500).json({
@@ -193,7 +145,7 @@ const updateUsoMoviDisp = async (req, res) => {
       });
     }
 
-    const { responsavelId, equipamentoId, equipamentoType, origemId } = req.body;
+    const { responsavelId, equipamentoId, finish_date } = req.body;
 
     // Verify if new responsável exists (if provided)
     if (responsavelId) {
@@ -207,45 +159,20 @@ const updateUsoMoviDisp = async (req, res) => {
       record.responsavelId = responsavelId;
     }
 
-    // Verify if new origem exists (if provided)
-    if (origemId) {
-      const origem = await User.findByPk(origemId);
-      if (!origem) {
-        return res.status(404).json({
-          success: false,
-          message: 'User (origem) not found',
-        });
-      }
-      record.origemId = origemId;
-    }
-
     // Verify if new equipamento exists (if provided)
-    if (equipamentoId && equipamentoType) {
-      if (!['Celular', 'Computador', 'AirTag'].includes(equipamentoType)) {
-        return res.status(400).json({
-          success: false,
-          message: 'equipamentoType must be one of: Celular, Computador, AirTag',
-        });
-      }
-
-      let equipamento = null;
-      if (equipamentoType === 'Celular') {
-        equipamento = await Celular.findByPk(equipamentoId);
-      } else if (equipamentoType === 'Computador') {
-        equipamento = await Computador.findByPk(equipamentoId);
-      } else if (equipamentoType === 'AirTag') {
-        equipamento = await AirTag.findByPk(equipamentoId);
-      }
-
+    if (equipamentoId) {
+      const equipamento = await Equipamento.findByPk(equipamentoId);
       if (!equipamento) {
         return res.status(404).json({
           success: false,
-          message: `${equipamentoType} with id ${equipamentoId} not found`,
+          message: 'Equipamento not found',
         });
       }
-
       record.equipamentoId = equipamentoId;
-      record.equipamentoType = equipamentoType;
+    }
+
+    if (finish_date !== undefined) {
+      record.finish_date = finish_date;
     }
 
     await record.save();
@@ -259,32 +186,17 @@ const updateUsoMoviDisp = async (req, res) => {
           attributes: ['id', 'name', 'email'],
         },
         {
-          model: User,
-          as: 'origem',
-          attributes: ['id', 'name', 'email'],
+          model: Equipamento,
+          as: 'equipamento',
+          attributes: ['id', 'tipo', 'marca', 'modelo'],
         },
       ],
     });
 
-    // Get the equipamento
-    let equipamento = null;
-    if (updated_record.equipamentoType === 'Celular') {
-      equipamento = await Celular.findByPk(updated_record.equipamentoId);
-    } else if (updated_record.equipamentoType === 'Computador') {
-      equipamento = await Computador.findByPk(updated_record.equipamentoId);
-    } else if (updated_record.equipamentoType === 'AirTag') {
-      equipamento = await AirTag.findByPk(updated_record.equipamentoId);
-    }
-
-    const responseData = {
-      ...updated_record.toJSON(),
-      equipamento,
-    };
-
     res.status(200).json({
       success: true,
       message: 'UsoMoviDisp record updated successfully',
-      data: responseData,
+      data: updated_record,
     });
   } catch (error) {
     res.status(500).json({

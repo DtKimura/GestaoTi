@@ -6,6 +6,8 @@ const ComputadorController = require('../controllers/ComputadorController');
 const CelularController = require('../controllers/CelularController');
 const UsoMoviDispController = require('../controllers/UsoMoviDispController');
 const InfraestruturaController = require('../controllers/InfraestruturaController');
+const ManutencaoController = require('../controllers/ManutencaoController');
+const EquipamentoController = require('../controllers/EquipamentoController');
 
 // Routes for users
 router.get('/users', UserController.getAllUsers);
@@ -48,5 +50,20 @@ router.get('/infraestrutura/:id', InfraestruturaController.getInfraestruturaById
 router.post('/infraestrutura', InfraestruturaController.createInfraestrutura);
 router.put('/infraestrutura/:id', InfraestruturaController.updateInfraestrutura);
 router.delete('/infraestrutura/:id', InfraestruturaController.deleteInfraestrutura);
+
+// Routes for manutencao
+router.get('/manutencao', ManutencaoController.getAllManutencoes);
+router.get('/manutencao/:id', ManutencaoController.getManutencaoById);
+router.post('/manutencao', ManutencaoController.createManutencao);
+router.put('/manutencao/:id', ManutencaoController.updateManutencao);
+router.delete('/manutencao/:id', ManutencaoController.deleteManutencao);
+
+// Routes for equipamento
+router.get('/equipamento', EquipamentoController.getAllEquipamentos);
+router.get('/equipamento/:id', EquipamentoController.getEquipamentoById);
+router.get('/equipamento/tipo/:tipo', EquipamentoController.getEquipamentosByType);
+router.post('/equipamento', EquipamentoController.createEquipamento);
+router.put('/equipamento/:id', EquipamentoController.updateEquipamento);
+router.delete('/equipamento/:id', EquipamentoController.deleteEquipamento);
 
 module.exports = router;

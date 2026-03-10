@@ -5,11 +5,13 @@ require('dotenv').config();
 
 const sequelize = require('./config/database');
 const User = require('./models/User');
+const Equipamento = require('./models/Equipamento');
 const AirTag = require('./models/AirTag');
 const Computador = require('./models/Computador');
 const Celular = require('./models/Celular');
 const UsoMoviDisp = require('./models/UsoMoviDisp');
 const Infraestrutura = require('./models/Infraestrutura');
+const Manutencao = require('./models/Manutencao');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
 

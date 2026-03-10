@@ -3,21 +3,11 @@ const sequelize = require('../config/database');
 const User = require('./User');
 const Equipamento = require('./Equipamento');
 
-const UsoMoviDisp = sequelize.define('UsoMoviDisp', {
+const Manutencao = sequelize.define('Manutencao', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
-  },
-  responsavelId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: User,
-      key: 'id',
-    },
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
   },
   equipamentoId: {
     type: DataTypes.INTEGER,
@@ -29,10 +19,27 @@ const UsoMoviDisp = sequelize.define('UsoMoviDisp', {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   },
-  finish_date: {
+  situacao: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  resumo: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  resp_tec: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: User,
+      key: 'id',
+    },
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  },
+  data_fim: {
     type: DataTypes.DATE,
     allowNull: true,
-    defaultValue: null,
   },
   createdAt: {
     type: DataTypes.DATE,
@@ -43,27 +50,27 @@ const UsoMoviDisp = sequelize.define('UsoMoviDisp', {
     defaultValue: DataTypes.NOW,
   },
 }, {
-  tableName: 'uso_movi_disps',
+  tableName: 'manutencoes',
   timestamps: false,
 });
 
 // Define relationships
-UsoMoviDisp.belongsTo(User, {
-  foreignKey: 'responsavelId',
-  as: 'responsavel',
+Manutencao.belongsTo(User, {
+  foreignKey: 'resp_tec',
+  as: 'responsavelTecnico',
 });
 
-UsoMoviDisp.belongsTo(Equipamento, {
+Manutencao.belongsTo(Equipamento, {
   foreignKey: 'equipamentoId',
   as: 'equipamento',
 });
 
-User.hasMany(UsoMoviDisp, {
-  foreignKey: 'responsavelId',
+User.hasMany(Manutencao, {
+  foreignKey: 'resp_tec',
 });
 
-Equipamento.hasMany(UsoMoviDisp, {
+Equipamento.hasMany(Manutencao, {
   foreignKey: 'equipamentoId',
 });
 
-module.exports = UsoMoviDisp;
+module.exports = Manutencao;

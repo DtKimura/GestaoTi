@@ -1,12 +1,22 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User');
+const Equipamento = require('./Equipamento');
 
 const Computador = sequelize.define('Computador', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
+  },
+  equipamentoId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Equipamento,
+      key: 'id',
+    },
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   },
   hostname: {
     type: DataTypes.STRING,
@@ -21,45 +31,14 @@ const Computador = sequelize.define('Computador', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  usuario_respId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: User,
-      key: 'id',
-    },
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  },
   termo: {
     type: DataTypes.ENUM('ATIVO', 'INATIVO', 'MANUTENÇÃO', 'DESCONTINUADO'),
     allowNull: false,
     defaultValue: 'ATIVO',
   },
-  manu_prev: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  status: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: 'OPERACIONAL',
-  },
-  tipo: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   perfil_aplic: {
     type: DataTypes.STRING,
     allowNull: true,
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
   },
 }, {
   tableName: 'computadores',
@@ -67,13 +46,13 @@ const Computador = sequelize.define('Computador', {
 });
 
 // Define relationships
-Computador.belongsTo(User, {
-  foreignKey: 'usuario_respId',
-  as: 'usuario_resp',
+Computador.belongsTo(Equipamento, {
+  foreignKey: 'equipamentoId',
+  as: 'equipamento',
 });
 
-User.hasMany(Computador, {
-  foreignKey: 'usuario_respId',
+Equipamento.hasMany(Computador, {
+  foreignKey: 'equipamentoId',
 });
 
 module.exports = Computador;

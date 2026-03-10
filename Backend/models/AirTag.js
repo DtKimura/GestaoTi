@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User');
+const Equipamento = require('./Equipamento');
 
 const AirTag = sequelize.define('AirTag', {
   id: {
@@ -8,11 +8,11 @@ const AirTag = sequelize.define('AirTag', {
     primaryKey: true,
     autoIncrement: true,
   },
-  responsavelId: {
+  equipamentoId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: User,
+      model: Equipamento,
       key: 'id',
     },
     onDelete: 'CASCADE',
@@ -22,10 +22,6 @@ const AirTag = sequelize.define('AirTag', {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
-  },
-  modelo: {
-    type: DataTypes.STRING,
-    allowNull: false,
   },
   renavan: {
     type: DataTypes.ENUM('ATIVO', 'INATIVO', 'PENDENTE'),
@@ -37,27 +33,19 @@ const AirTag = sequelize.define('AirTag', {
     allowNull: false,
     defaultValue: true,
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW, 
-  },
 }, {
   tableName: 'airtags',
   timestamps: false,
 });
 
 // Define relationships
-AirTag.belongsTo(User, {
-  foreignKey: 'responsavelId',
-  as: 'responsavel',
+AirTag.belongsTo(Equipamento, {
+  foreignKey: 'equipamentoId',
+  as: 'equipamento',
 });
 
-User.hasMany(AirTag, {
-  foreignKey: 'responsavelId',
+Equipamento.hasMany(AirTag, {
+  foreignKey: 'equipamentoId',
 });
 
 module.exports = AirTag;
