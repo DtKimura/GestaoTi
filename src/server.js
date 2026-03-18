@@ -58,7 +58,7 @@ const startServer = async () => {
     console.log('Database connection successful');
 
     // Sync models with database
-    await sequelize.sync({ alter: false });
+    await sequelize.sync({ alter: true });
     console.log('Models synced with database');
 
     // Start server

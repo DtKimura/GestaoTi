@@ -139,7 +139,13 @@ Celular.belongsTo(User, {
 });
 
 User.hasMany(Celular, {
-  foreignKey: 'usuario_respId',
+  foreignKey: 'resp_tecId',
+  as: 'celularesResponsavel',
+});
+
+User.hasMany(Celular, {
+  foreignKey: 'usuario_antId',
+  as: 'celularesAnterior',
 });
 
 module.exports = Celular;

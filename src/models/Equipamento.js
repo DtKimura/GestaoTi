@@ -31,6 +31,17 @@ const Equipamento = sequelize.define('Equipamento', {
   status: {
     type: DataTypes.ENUM('USO', 'DISPONÍVEL', 'MANUTENÇÃO', 'DESCONTINUADO'),
     allowNull: false,
+    defaultValue: 'DISPONÍVEL',
+  },
+  usuario_respId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: User,
+      key: 'id',
+    },
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
   },
 }, {
   tableName: 'equipamentos',

@@ -29,7 +29,7 @@ const Manutencao = sequelize.define('Manutencao', {
   },
   resp_tec: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: User,
       key: 'id',

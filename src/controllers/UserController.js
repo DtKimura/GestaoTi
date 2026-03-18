@@ -41,16 +41,16 @@ const getUserById = async (req, res) => {
 // Create new user
 const createUser = async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, empresa, setor, cargo, numero } = req.body;
 
-    if (!name || !email) {
+    if (!name || !email || !empresa || !setor || !cargo) {
       return res.status(400).json({
         success: false,
-        message: 'Name and email are required',
+        message: 'Name, email, empresa, setor, and cargo are required',
       });
     }
 
-    const user = await User.create({ name, email });
+    const user = await User.create({ name, email, empresa, setor, cargo, numero });
     res.status(201).json({
       success: true,
       message: 'User created successfully',
@@ -75,9 +75,13 @@ const updateUser = async (req, res) => {
       });
     }
 
-    const { name, email } = req.body;
+    const { name, email, empresa, setor, cargo, numero } = req.body;
     if (name) user.name = name;
     if (email) user.email = email;
+    if (empresa) user.empresa = empresa;
+    if (setor) user.setor = setor;
+    if (cargo) user.cargo = cargo;
+    if (numero) user.numero = numero;
 
     await user.save();
     res.status(200).json({
