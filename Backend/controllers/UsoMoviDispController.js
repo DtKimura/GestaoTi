@@ -1,24 +1,9 @@
-const UsoMoviDisp = require('../models/UsoMoviDisp');
-const User = require('../models/User');
-const Equipamento = require('../models/Equipamento');
+const UsoMoviDispService = require('../services/UsoMoviDispService');
 
 // Get all UsoMoviDisp records
 const getAllUsoMoviDisp = async (req, res) => {
   try {
-    const records = await UsoMoviDisp.findAll({
-      include: [
-        {
-          model: User,
-          as: 'responsavel',
-          attributes: ['id', 'name', 'email'],
-        },
-        {
-          model: Equipamento,
-          as: 'equipamento',
-          attributes: ['id', 'tipo', 'marca', 'modelo'],
-        },
-      ],
-    });
+    const records = await UsoMoviDispService.getAllUsoMoviDisp();
     res.status(200).json({
       success: true,
       data: records,
@@ -34,27 +19,7 @@ const getAllUsoMoviDisp = async (req, res) => {
 // Get UsoMoviDisp by ID
 const getUsoMoviDispById = async (req, res) => {
   try {
-    const record = await UsoMoviDisp.findByPk(req.params.id, {
-      include: [
-        {
-          model: User,
-          as: 'responsavel',
-          attributes: ['id', 'name', 'email'],
-        },
-        {
-          model: Equipamento,
-          as: 'equipamento',
-          attributes: ['id', 'tipo', 'marca', 'modelo'],
-        },
-      ],
-    });
-    if (!record) {
-      return res.status(404).json({
-        success: false,
-        message: 'UsoMoviDisp record not found',
-      });
-    }
-
+    const record = await UsoMoviDispService.getUsoMoviDispById(req.params.id);
     res.status(200).json({
       success: true,
       data: record,
@@ -71,63 +36,19 @@ const getUsoMoviDispById = async (req, res) => {
 const createUsoMoviDisp = async (req, res) => {
   try {
     const { responsavelId, equipamentoId, finish_date } = req.body;
-
-    // Validate required fields
-    if (!responsavelId || !equipamentoId) {
-      return res.status(400).json({
-        success: false,
-        message: 'responsavelId and equipamentoId are required',
-      });
-    }
-
-    // Verify if responsável (User) exists
-    const responsavel = await User.findByPk(responsavelId);
-    if (!responsavel) {
-      return res.status(404).json({
-        success: false,
-        message: 'User (responsável) not found',
-      });
-    }
-
-    // Verify if equipamento exists
-    const equipamento = await Equipamento.findByPk(equipamentoId);
-    if (!equipamento) {
-      return res.status(404).json({
-        success: false,
-        message: 'Equipamento not found',
-      });
-    }
-
-    // Create the record
-    const record = await UsoMoviDisp.create({
+    const createdRecord = await UsoMoviDispService.createUsoMoviDisp(
       responsavelId,
       equipamentoId,
-      finish_date,
-    });
-
-    // Fetch with associations
-    const created_record = await UsoMoviDisp.findByPk(record.id, {
-      include: [
-        {
-          model: User,
-          as: 'responsavel',
-          attributes: ['id', 'name', 'email'],
-        },
-        {
-          model: Equipamento,
-          as: 'equipamento',
-          attributes: ['id', 'tipo', 'marca', 'modelo'],
-        },
-      ],
-    });
+      finish_date
+    );
 
     res.status(201).json({
       success: true,
       message: 'UsoMoviDisp record created successfully',
-      data: created_record,
+      data: createdRecord,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -137,69 +58,20 @@ const createUsoMoviDisp = async (req, res) => {
 // Update UsoMoviDisp record
 const updateUsoMoviDisp = async (req, res) => {
   try {
-    const record = await UsoMoviDisp.findByPk(req.params.id);
-    if (!record) {
-      return res.status(404).json({
-        success: false,
-        message: 'UsoMoviDisp record not found',
-      });
-    }
-
     const { responsavelId, equipamentoId, finish_date } = req.body;
-
-    // Verify if new responsável exists (if provided)
-    if (responsavelId) {
-      const responsavel = await User.findByPk(responsavelId);
-      if (!responsavel) {
-        return res.status(404).json({
-          success: false,
-          message: 'User (responsável) not found',
-        });
-      }
-      record.responsavelId = responsavelId;
-    }
-
-    // Verify if new equipamento exists (if provided)
-    if (equipamentoId) {
-      const equipamento = await Equipamento.findByPk(equipamentoId);
-      if (!equipamento) {
-        return res.status(404).json({
-          success: false,
-          message: 'Equipamento not found',
-        });
-      }
-      record.equipamentoId = equipamentoId;
-    }
-
-    if (finish_date !== undefined) {
-      record.finish_date = finish_date;
-    }
-
-    await record.save();
-
-    // Fetch updated record with associations
-    const updated_record = await UsoMoviDisp.findByPk(req.params.id, {
-      include: [
-        {
-          model: User,
-          as: 'responsavel',
-          attributes: ['id', 'name', 'email'],
-        },
-        {
-          model: Equipamento,
-          as: 'equipamento',
-          attributes: ['id', 'tipo', 'marca', 'modelo'],
-        },
-      ],
+    const updatedRecord = await UsoMoviDispService.updateUsoMoviDisp(req.params.id, {
+      responsavelId,
+      equipamentoId,
+      finish_date,
     });
 
     res.status(200).json({
       success: true,
       message: 'UsoMoviDisp record updated successfully',
-      data: updated_record,
+      data: updatedRecord,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -209,22 +81,10 @@ const updateUsoMoviDisp = async (req, res) => {
 // Delete UsoMoviDisp record
 const deleteUsoMoviDisp = async (req, res) => {
   try {
-    const record = await UsoMoviDisp.findByPk(req.params.id);
-    if (!record) {
-      return res.status(404).json({
-        success: false,
-        message: 'UsoMoviDisp record not found',
-      });
-    }
-
-    await record.destroy();
-
-    res.status(200).json({
-      success: true,
-      message: 'UsoMoviDisp record deleted successfully',
-    });
+    const result = await UsoMoviDispService.deleteUsoMoviDisp(req.params.id);
+    res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });

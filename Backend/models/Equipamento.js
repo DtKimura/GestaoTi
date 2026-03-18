@@ -20,16 +20,6 @@ const Equipamento = sequelize.define('Equipamento', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  usuario_respId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: User,
-      key: 'id',
-    },
-    onDelete: 'SET NULL',
-    onUpdate: 'CASCADE',
-  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
@@ -37,6 +27,10 @@ const Equipamento = sequelize.define('Equipamento', {
   updatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
+  },
+  status: {
+    type: DataTypes.ENUM('USO', 'DISPONÍVEL', 'MANUTENÇÃO', 'DESCONTINUADO'),
+    allowNull: false,
   },
 }, {
   tableName: 'equipamentos',
