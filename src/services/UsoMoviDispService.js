@@ -35,7 +35,7 @@ const createUsoMoviDisp = async (responsavelId, equipamentoId, finish_date = nul
   });
 
   // Atualizar o status do equipamento para "USO"
-  await equipamento.update({ status: 'USO' });
+  await equipamento.update({ status: 'USO', usuario_respId: record.responsavelId });
 
   // Buscar o registro criado com associações
   const createdRecord = await UsoMoviDisp.findByPk(record.id, {
@@ -175,7 +175,7 @@ const getUsoMoviDispById = async (id) => {
 };
 
 /**
- * Deleta um registro de UsoMoviDisp
+ * Deleta um registro de UsoMoviDisp e atualiza o status do equipamento para "DISPONÍVEL"
  * @param {number} id - ID do registro
  * @returns {Object} Mensagem de sucesso
  */
@@ -185,7 +185,21 @@ const deleteUsoMoviDisp = async (id) => {
     throw new Error('UsoMoviDisp record not found');
   }
 
+  // Obter o ID do equipamento antes de deletar
+  const equipamentoId = record.equipamentoId;
+
+  // Deletar o registro
   await record.destroy();
+
+  // Atualizar o equipamento para "DISPONÍVEL" e limpar o usuario_respId
+  const equipamento = await Equipamento.findByPk(equipamentoId);
+  if (equipamento) {
+    await equipamento.update({
+      status: 'DISPONÍVEL',
+      usuario_respId: null,
+    });
+  }
+
   return { success: true, message: 'UsoMoviDisp record deleted successfully' };
 };
 
