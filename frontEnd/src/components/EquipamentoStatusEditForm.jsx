@@ -1,22 +1,17 @@
 import { useState, useEffect } from 'react'
-import '../styles/EquipamentoForm.css'
+import '../styles/EquipamentoStatusEditForm.css'
 
-function EquipamentoForm({ usuarios, onSuccess, onError }) {
+function EquipamentoStatusEditForm({ equipamento, usuarios, onSuccess, onError }) {
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
-    tipo: '',
-    marca: '',
-    modelo: '',
-    status: 'DISPONÍVEL',
-    usuario_respId: ''
+    status: equipamento?.status || 'DISPONÍVEL',
+    usuario_respId: equipamento?.usuario_respId || ''
   })
 
-  const tipos = ['Celular', 'Computador', 'AirTag', 'Infraestrutura']
   const allStatuses = ['DISPONÍVEL', 'USO', 'MANUTENÇÃO', 'DESCONTINUADO']
 
-  // Determinar quais status estão disponíveis
-  const availableStatuses = formData.usuario_respId 
+  // Determinar quais status estão disponíveis baseado no responsável
+  const availableStatuses = formData.usuario_respId
     ? ['USO'] // Com responsável: apenas USO
     : ['DISPONÍVEL', 'MANUTENÇÃO', 'DESCONTINUADO'] // Sem responsável: sem USO
 
@@ -41,22 +36,16 @@ function EquipamentoForm({ usuarios, onSuccess, onError }) {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value === '' ? null : value
     }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setSuccess(false)
 
     try {
-      // Validar campos obrigatórios
-      if (!formData.tipo || !formData.marca || !formData.modelo) {
-        throw new Error('Todos os campos obrigatórios devem ser preenchidos')
-      }
-
-      // Validar regra de negócio no frontend também
+      // Validar regra de negócio
       if (formData.usuario_respId && formData.status !== 'USO') {
         throw new Error('Equipamento com responsável deve ter status "USO"')
       }
@@ -66,15 +55,12 @@ function EquipamentoForm({ usuarios, onSuccess, onError }) {
       }
 
       const payload = {
-        tipo: formData.tipo,
-        marca: formData.marca,
-        modelo: formData.modelo,
         status: formData.status,
         usuario_respId: formData.usuario_respId ? parseInt(formData.usuario_respId) : null
       }
 
-      const response = await fetch('/api/equipamento', {
-        method: 'POST',
+      const response = await fetch(`/api/equipamento/${equipamento.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -84,20 +70,12 @@ function EquipamentoForm({ usuarios, onSuccess, onError }) {
       const result = await response.json()
 
       if (result.success) {
-        setSuccess(true)
-        setFormData({
-          tipo: '',
-          marca: '',
-          modelo: '',
-          status: 'DISPONÍVEL',
-          usuario_respId: ''
-        })
         onSuccess && onSuccess(result.data)
       } else {
-        throw new Error(result.message || 'Erro ao criar equipamento')
+        throw new Error(result.message || 'Erro ao atualizar equipamento')
       }
     } catch (error) {
-      console.error('Erro ao criar equipamento:', error)
+      console.error('Erro ao atualizar:', error)
       onError && onError(error.message)
     } finally {
       setLoading(false)
@@ -105,66 +83,13 @@ function EquipamentoForm({ usuarios, onSuccess, onError }) {
   }
 
   return (
-    <form className="equipamento-form" onSubmit={handleSubmit}>
-      {success && (
-        <div className="form-success">
-          ✓ Equipamento adicionado com sucesso!
-        </div>
-      )}
-
-      <div className="form-group">
-        <label htmlFor="tipo">Tipo de Equipamento *</label>
-        <select
-          id="tipo"
-          name="tipo"
-          value={formData.tipo}
-          onChange={handleChange}
-          required
-          className="form-input"
-        >
-          <option value="">Selecione um tipo</option>
-          {tipos.map(tipo => (
-            <option key={tipo} value={tipo}>{tipo}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="marca">Marca *</label>
-        <input
-          id="marca"
-          type="text"
-          name="marca"
-          value={formData.marca}
-          onChange={handleChange}
-          placeholder="ex: Samsung, Apple..."
-          required
-          className="form-input"
-          maxLength={100}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="modelo">Modelo *</label>
-        <input
-          id="modelo"
-          type="text"
-          name="modelo"
-          value={formData.modelo}
-          onChange={handleChange}
-          placeholder="ex: Galaxy S21, MacBook Pro..."
-          required
-          className="form-input"
-          maxLength={100}
-        />
-      </div>
-
+    <form className="equipamento-status-form" onSubmit={handleSubmit}>
       <div className="form-group">
         <label htmlFor="usuario_respId">Responsável</label>
         <select
           id="usuario_respId"
           name="usuario_respId"
-          value={formData.usuario_respId}
+          value={formData.usuario_respId || ''}
           onChange={handleChange}
           className="form-input"
         >
@@ -203,18 +128,16 @@ function EquipamentoForm({ usuarios, onSuccess, onError }) {
       </div>
 
       <div className="form-actions">
-        <button 
-          type="submit" 
-          className="btn btn-submit"
+        <button
+          type="submit"
+          className="btn btn-primary"
           disabled={loading}
         >
-          {loading ? 'Adicionando...' : '+ Adicionar Equipamento'}
+          {loading ? 'Salvando...' : 'Salvar Alterações'}
         </button>
       </div>
-
-      <p className="form-hint">* Campos obrigatórios</p>
     </form>
   )
 }
 
-export default EquipamentoForm
+export default EquipamentoStatusEditForm

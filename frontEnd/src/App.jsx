@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import EquipamentosPage from './pages/EquipamentosPage'
+import UsuariosPage from './pages/UsuariosPage'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -108,12 +109,7 @@ function App() {
 
         {currentPage === 'equipamentos' && <EquipamentosPage />}
 
-        {currentPage === 'usuarios' && (
-          <section className="page-content">
-            <h2>Usuários</h2>
-            <p>Página de usuários (em desenvolvimento)</p>
-          </section>
-        )}
+        {currentPage === 'usuarios' && <UsuariosPage />}
 
         {currentPage === 'manutencao' && (
           <section className="page-content">

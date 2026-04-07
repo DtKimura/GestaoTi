@@ -56,17 +56,17 @@ const Celular = sequelize.define('Celular', {
   mac: {
     type: DataTypes.STRING,
     allowNull: true,
-    unique: true,
+    unique: 'unique_mac_device',
   },
   imei_1: {
     type: DataTypes.STRING,
     allowNull: true,
-    unique: true,
+    unique: 'unique_imei1_device',
   },
   imei_2: {
     type: DataTypes.STRING,
     allowNull: true,
-    unique: true,
+    unique: 'unique_imei2_device',
   },
   numero: {
     type: DataTypes.STRING,

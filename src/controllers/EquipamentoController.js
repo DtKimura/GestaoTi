@@ -94,7 +94,7 @@ const getEquipamentosByType = async (req, res) => {
 // Create new equipamento
 const createEquipamento = async (req, res) => {
   try {
-    const { tipo, marca, modelo, usuario_respId } = req.body;
+    const { tipo, marca, modelo, usuario_respId, status } = req.body;
 
     // Validate required fields
     if (!tipo || !marca || !modelo) {
@@ -113,6 +113,31 @@ const createEquipamento = async (req, res) => {
       });
     }
 
+    // Validate status if provided
+    const validStatuses = ['USO', 'DISPONÍVEL', 'MANUTENÇÃO', 'DESCONTINUADO'];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be one of: USO, DISPONÍVEL, MANUTENÇÃO, DESCONTINUADO',
+      });
+    }
+
+    // Validate business rule: responsável = status USO
+    if (usuario_respId && status && status !== 'USO') {
+      return res.status(400).json({
+        success: false,
+        message: 'Equipamento com responsável deve ter status "USO"',
+      });
+    }
+
+    // Validate business rule: sem responsável ≠ status USO
+    if (!usuario_respId && status === 'USO') {
+      return res.status(400).json({
+        success: false,
+        message: 'Equipamento sem responsável não pode ter status "USO"',
+      });
+    }
+
     // Verify user if provided
     if (usuario_respId) {
       const user = await User.findByPk(usuario_respId);
@@ -128,7 +153,8 @@ const createEquipamento = async (req, res) => {
       tipo,
       marca,
       modelo,
-      usuario_respId,
+      usuario_respId: usuario_respId || null,
+      status: status || 'DISPONÍVEL',
     });
 
     res.status(201).json({
@@ -155,7 +181,7 @@ const updateEquipamento = async (req, res) => {
       });
     }
 
-    const { tipo, marca, modelo, usuario_respId } = req.body;
+    const { tipo, marca, modelo, usuario_respId, status } = req.body;
 
     // Validate tipo if provided
     if (tipo) {
@@ -166,6 +192,35 @@ const updateEquipamento = async (req, res) => {
           message: 'Invalid tipo. Must be one of: Celular, Computador, AirTag, Infraestrutura',
         });
       }
+    }
+
+    // Validate status if provided
+    const validStatuses = ['USO', 'DISPONÍVEL', 'MANUTENÇÃO', 'DESCONTINUADO'];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be one of: USO, DISPONÍVEL, MANUTENÇÃO, DESCONTINUADO',
+      });
+    }
+
+    // Determine final values for business rule validation
+    const finalUsuarioRespId = usuario_respId !== undefined ? usuario_respId : equipamento.usuario_respId;
+    const finalStatus = status !== undefined ? status : equipamento.status;
+
+    // Validate business rule: responsável = status USO
+    if (finalUsuarioRespId && finalStatus !== 'USO') {
+      return res.status(400).json({
+        success: false,
+        message: 'Equipamento com responsável deve ter status "USO"',
+      });
+    }
+
+    // Validate business rule: sem responsável ≠ status USO
+    if (!finalUsuarioRespId && finalStatus === 'USO') {
+      return res.status(400).json({
+        success: false,
+        message: 'Equipamento sem responsável não pode ter status "USO"',
+      });
     }
 
     // Verify user if provided
@@ -183,6 +238,7 @@ const updateEquipamento = async (req, res) => {
     if (marca) equipamento.marca = marca;
     if (modelo) equipamento.modelo = modelo;
     if (usuario_respId !== undefined) equipamento.usuario_respId = usuario_respId;
+    if (status !== undefined) equipamento.status = status;
 
     await equipamento.save();
 

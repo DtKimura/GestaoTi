@@ -75,6 +75,7 @@ function EquipamentosPage() {
           </button>
           <EquipamentoDashboard 
             equipamento={selectedEquipamento}
+            usuarios={usuarios}
             onEquipamentoUpdate={fetchEquipamentos}
           />
         </div>

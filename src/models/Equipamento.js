@@ -46,6 +46,19 @@ const Equipamento = sequelize.define('Equipamento', {
 }, {
   tableName: 'equipamentos',
   timestamps: false,
+  validate: {
+    responsavelStatusMatch() {
+      if (this.usuario_respId !== null && this.usuario_respId !== undefined) {
+        if (this.status !== 'USO') {
+          throw new Error('Equipamento com responsável deve ter status "USO"');
+        }
+      } else {
+        if (this.status === 'USO') {
+          throw new Error('Equipamento sem responsável não pode ter status "USO"');
+        }
+      }
+    }
+  }
 });
 
 // Define relationships

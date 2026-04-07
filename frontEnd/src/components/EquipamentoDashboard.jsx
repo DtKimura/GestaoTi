@@ -2,11 +2,13 @@ import { useState } from 'react'
 import Modal from './Modal'
 import EquipamentoDetalhes from './EquipamentoDetalhes'
 import EquipamentoEditForm from './EquipamentoEditForm'
+import EquipamentoStatusEditForm from './EquipamentoStatusEditForm'
 import '../styles/EquipamentoDashboard.css'
 
-function EquipamentoDashboard({ equipamento, onEquipamentoUpdate }) {
+function EquipamentoDashboard({ equipamento, usuarios, onEquipamentoUpdate }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
   if (!equipamento) {
     return (
       <div className="equipamento-dashboard">
@@ -94,6 +96,7 @@ function EquipamentoDashboard({ equipamento, onEquipamentoUpdate }) {
 
         <div className="dashboard-actions">
           <button className="btn btn-info" onClick={() => setIsModalOpen(true)}>ℹ Mais Informações</button>
+          <button className="btn btn-edit" onClick={() => setIsStatusModalOpen(true)}>🔄 Status/Responsável</button>
           <button className="btn btn-edit" onClick={() => setIsEditModalOpen(true)}>✎ Editar</button>
           <button className="btn btn-delete">🗑 Deletar</button>
         </div>
@@ -104,6 +107,22 @@ function EquipamentoDashboard({ equipamento, onEquipamentoUpdate }) {
           title={`Detalhes - ${equipamento.marca} ${equipamento.modelo}`}
         >
           <EquipamentoDetalhes equipamento={equipamento} />
+        </Modal>
+
+        <Modal
+          isOpen={isStatusModalOpen}
+          onClose={() => setIsStatusModalOpen(false)}
+          title="Alterar Status e Responsável"
+        >
+          <EquipamentoStatusEditForm
+            equipamento={equipamento}
+            usuarios={usuarios || []}
+            onSuccess={() => {
+              setIsStatusModalOpen(false)
+              onEquipamentoUpdate?.()
+            }}
+            onError={(erro) => alert('Erro: ' + erro)}
+          />
         </Modal>
 
         <Modal
